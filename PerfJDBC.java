@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.lang.Thread;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 class PerfJDBC {
     Connection connection;
@@ -24,7 +27,7 @@ class PerfJDBC {
         LocalDateTime end = LocalDateTime.now();
 
         Duration duration = Duration.between(start, end);
-        System.out.println(String.format("[%s] x %4d: %d.%06ds", sql, iterations, duration.getSeconds(), duration.getNano()/1000));
+        System.out.println(String.format("[%s] x %4d: %2d.%06ds", sql, iterations, duration.getSeconds(), duration.getNano()/1000));
     }
 
     private void runMultithread(String testName, String sql, int nbThreads) throws Exception {
@@ -52,17 +55,41 @@ class PerfJDBC {
         LocalDateTime end = LocalDateTime.now();
 
         Duration duration = Duration.between(start, end);
-        System.out.println(String.format("[%s] x %4d threads: %d.%06ds", sql, nbThreads, duration.getSeconds(), duration.getNano()/1000));
+        System.out.println(String.format("[%s] x %d threads: %d.%06ds", sql, nbThreads, duration.getSeconds(), duration.getNano()/1000));
     }
 
     public PerfJDBC() throws Exception {
         String url = "jdbc:trino://localhost:8080/memory/information_schema?user=test";
         connection = DriverManager.getConnection(url);
 
-        run("Small query", "SELECT 1                                    ", 1000);
-        run("Large query", "SELECT * FROM tpch.sf100.orders LIMIT 100000", 10);
-        run("Large query", "SELECT * FROM tpch.sf100.orders LIMIT 100000", 1);
-        runMultithread("Large query", "SELECT * FROM tpch.sf100.orders LIMIT 100000", 10);
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("queries.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                if (line == "") {
+                    line = reader.readLine();
+                    continue;
+                }
+                String[] details = line.split("\\|");
+
+                if (details[0].isEmpty()) {
+                    line = reader.readLine();
+                    continue;
+                }
+                int nbThreads = Integer.valueOf(details[2]);
+                if (nbThreads > 1) {
+                    runMultithread("", details[0], nbThreads);
+                } else {
+                    run("", details[0], Integer.valueOf(details[1]));
+                }
+
+                line = reader.readLine();
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            System.out.println(String.format("Error reding queries.txt: %s\n", e));
+        }
     }
 
     public static void main(String[] args) throws Exception {

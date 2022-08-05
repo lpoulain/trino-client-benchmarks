@@ -4,16 +4,45 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
-        "sync"
+	"sync"
+	"bufio"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 
 	_ "github.com/trinodb/trino-go-client/trino"
 )
 
 func main() {
-	run("Small query", "SELECT 1                                    ", 1000)
-	run("Large query", "SELECT * FROM tpch.sf100.orders LIMIT 100000", 10)
-        run("Large query", "SELECT * FROM tpch.sf100.orders LIMIT 100000", 1)
-        runMultithread("Large query", "SELECT * FROM tpch.sf100.orders LIMIT 100000", 10)
+	file, err := os.Open("queries.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		query := scanner.Text()
+		if query == "" {
+			continue
+		}
+		details := strings.Split(query, "|")
+		if details[0] == "" {
+			continue
+		}
+
+		nbThreads, _ := strconv.Atoi(details[2])
+		nbIterations, _ := strconv.Atoi(details[1])
+
+fmt.Sprintf("[%s] [%d] [%d]\n", details[0], nbIterations, nbThreads)
+
+		if nbThreads > 1 {
+			runMultithread("", details[0], nbThreads)
+		} else {
+			run("", details[0], nbIterations)
+		}
+	}
 }
 
 func run(testName string, query string, iterations int) {
@@ -31,7 +60,7 @@ func run(testName string, query string, iterations int) {
         }
 
         elapsed := time.Since(start)
-	fmt.Printf("[%s] x %4d: %s\n", query, iterations, elapsed)
+	fmt.Printf("[%s] x %4d: %9.6fs\n", query, iterations, elapsed.Seconds())
 }
 
 func runMultithread(testName string, query string, nbThreads int) {
@@ -55,6 +84,6 @@ func runMultithread(testName string, query string, nbThreads int) {
 
 	wg.Wait()
         elapsed := time.Since(start)
-        fmt.Printf("[%s] x %4d threads: %s\n", query, nbThreads, elapsed)
+        fmt.Printf("[%s] x %d threads: %fs\n", query, nbThreads, elapsed.Seconds())
 }
 
