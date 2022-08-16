@@ -11,9 +11,9 @@ def get_hash(sql):
 def extract(sql):
     hash = get_hash(sql.strip())
     if os.path.exists('./data/' + hash):
-        print('[{}] - Skipping'.format(sql))
+        print('[{}] - {} - Skipping'.format(sql, hash))
         return
-    print('[{}]'.format(sql))
+    print('[{}] - {}'.format(sql, hash))
 
     os.mkdir('./data/' + hash)
     headers = {'X-Trino-User': 'user'}

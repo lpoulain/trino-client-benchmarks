@@ -1,11 +1,21 @@
-SELECT 1                                                 |1000|1
-SELECT col_ts FROM memory.default.orders LIMIT 100000    |1|1
-SELECT col_time FROM memory.default.orders LIMIT 100000  |1|1
-SELECT col_inf FROM memory.default.orders LIMIT 100000   |1|1
-SELECT col_double FROM memory.default.orders LIMIT 100000|1|1
-SELECT col_int FROM memory.default.orders LIMIT 100000   |1|1
-SELECT * FROM tpch.sf100.orders LIMIT 100000             |10|1
-SELECT * FROM tpch.sf100.orders LIMIT 100000             |1|1
-SELECT * FROM tpch.sf100.orders LIMIT 1000000            |1|1
-SELECT * FROM tpch.sf100.orders LIMIT 10000000           |1|1
-SELECT * FROM tpch.sf100.orders LIMIT 100000             |1|10
+SELECT 1                                                  |1000|1
+SELECT col_date FROM memory.default.orders LIMIT 100000   |1|1
+SELECT col_ts_tz FROM memory.default.orders LIMIT 100000  |1|1
+SELECT col_ts FROM memory.default.orders LIMIT 100000     |1|1
+SELECT col_time FROM memory.default.orders LIMIT 100000   |1|1
+SELECT col_time_tz FROM memory.default.orders LIMIT 100000|1|1
+SELECT col_inf FROM memory.default.orders LIMIT 100000    |1|1
+SELECT col_double FROM memory.default.orders LIMIT 100000 |1|1
+SELECT col_real FROM memory.default.orders LIMIT 100000   |1|1
+SELECT col_decimal FROM memory.default.orders LIMIT 100000|1|1
+SELECT col_int FROM memory.default.orders LIMIT 100000    |1|1
+SELECT col_bool FROM memory.default.orders LIMIT 100000   |1|1
+SELECT col_varchar FROM memory.default.orders LIMIT 100000|1|1
+SELECT col_array FROM memory.default.orders LIMIT 100000  |1|1
+SELECT col_map FROM memory.default.orders LIMIT 100000    |1|1
+SELECT col_row FROM memory.default.orders LIMIT 100000    |1|1
+SELECT * FROM tpch.sf100.orders LIMIT 100000              |10|1
+SELECT * FROM tpch.sf100.orders LIMIT 100000              |1|1
+SELECT * FROM tpch.sf100.orders LIMIT 1000000             |1|1
+SELECT * FROM tpch.sf100.orders LIMIT 10000000            |1|1
+SELECT * FROM tpch.sf100.orders LIMIT 100000              |1|10

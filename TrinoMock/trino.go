@@ -24,6 +24,53 @@ var queries map[string][]byte
 var nextUris map[string]map[string][]byte
 var sql map[string]string
 
+func load_query(hash string) bool {
+	nextUris[hash] = make(map[string][]byte)
+
+	files, err := ioutil.ReadDir(fmt.Sprintf("./data/%s/", hash))
+	if err != nil {
+		return false
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		if file.Name() == "query.json" {
+			content, err := ioutil.ReadFile(fmt.Sprintf("./data/%s/query.json", hash))
+			if err != nil {
+				panic(err)
+			}
+			queries[hash] = content
+			//			fmt.Printf("[%s] [%d] [%d]\n", details[0], nbIterations, nbThreads)
+
+			//				fmt.Println(file.Name())
+		} else {
+			content, err := ioutil.ReadFile(fmt.Sprintf("./data/%s/%s", hash, file.Name()))
+			if err != nil {
+				panic(err)
+			}
+			idx := strings.Split(file.Name(), ".")[0]
+
+			nextUris[hash][idx] = content
+			//				fmt.Printf("%s (%s), %d bytes\n", file.Name(), idx, len(content))
+		}
+		//			f, err := os.Open(fmt.Sprintf("./data/%d/query.json", i))
+		/*			defer f.Close()
+
+					stats, statsErr := file.Stat()
+					if statsErr != nil {
+						return nil, statsErr
+					}
+
+					var size int64 = stats.Size()
+					bytes := make([]byte, size)*/
+	}
+
+	return true
+}
+
 func main() {
 	file, err := os.Open("../queries.txt")
 	if err != nil {
@@ -36,6 +83,8 @@ func main() {
 	nextUris = make(map[string]map[string][]byte)
 	sql = make(map[string]string)
 	i := 0
+
+	load_query("parquet")
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -54,54 +103,54 @@ func main() {
 		tests[i] = Test{query: details[0], nbIterations: nbIterations, nbThreads: nbThreads}
 
 		hash := get_hash(details[0])
-		//		iStr := strconv.Itoa(i)
-		//		sql[details[0]] = iStr
-		nextUris[hash] = make(map[string][]byte)
 
-		files, err := ioutil.ReadDir(fmt.Sprintf("./data/%s/", hash))
-		if err != nil {
-			//			log.Fatal(err)
-			i += 1
-			continue
+		result := load_query(hash)
+
+		if result {
+			fmt.Printf("[%s] [%d] [%d]\n", details[0], nbIterations, nbThreads)
 		}
 
-		for _, file := range files {
-			if file.IsDir() {
+		i += 1
+		/*
+			//		iStr := strconv.Itoa(i)
+			//		sql[details[0]] = iStr
+			nextUris[hash] = make(map[string][]byte)
+
+			files, err := ioutil.ReadDir(fmt.Sprintf("./data/%s/", hash))
+			if err != nil {
+				//			log.Fatal(err)
+				i += 1
 				continue
 			}
 
-			if file.Name() == "query.json" {
-				content, err := ioutil.ReadFile(fmt.Sprintf("./data/%s/query.json", hash))
-				if err != nil {
-					panic(err)
+			for _, file := range files {
+				if file.IsDir() {
+					continue
 				}
-				queries[hash] = content
-				fmt.Printf("[%s] [%d] [%d]\n", details[0], nbIterations, nbThreads)
 
-				//				fmt.Println(file.Name())
-			} else {
-				content, err := ioutil.ReadFile(fmt.Sprintf("./data/%s/%s", hash, file.Name()))
-				if err != nil {
-					panic(err)
+				if file.Name() == "query.json" {
+					content, err := ioutil.ReadFile(fmt.Sprintf("./data/%s/query.json", hash))
+					if err != nil {
+						panic(err)
+					}
+					queries[hash] = content
+					fmt.Printf("[%s] [%d] [%d]\n", details[0], nbIterations, nbThreads)
+
+					//				fmt.Println(file.Name())
+				} else {
+					content, err := ioutil.ReadFile(fmt.Sprintf("./data/%s/%s", hash, file.Name()))
+					if err != nil {
+						panic(err)
+					}
+					idx := strings.Split(file.Name(), ".")[0]
+
+					nextUris[hash][idx] = content
+					//				fmt.Printf("%s (%s), %d bytes\n", file.Name(), idx, len(content))
 				}
-				idx := strings.Split(file.Name(), ".")[0]
-
-				nextUris[hash][idx] = content
-				//				fmt.Printf("%s (%s), %d bytes\n", file.Name(), idx, len(content))
+				//			f, err := os.Open(fmt.Sprintf("./data/%d/query.json", i))
 			}
-			//			f, err := os.Open(fmt.Sprintf("./data/%d/query.json", i))
-			/*			defer f.Close()
-
-						stats, statsErr := file.Stat()
-						if statsErr != nil {
-							return nil, statsErr
-						}
-
-						var size int64 = stats.Size()
-						bytes := make([]byte, size)*/
-		}
-		i += 1
-
+			i += 1
+		*/
 		//		if nbThreads > 1 {
 		//			runMultithread("", details[0], nbThreads)
 		//		} else {

@@ -42,7 +42,7 @@ class Handler(BaseHTTPRequestHandler):
         return
 
 def run(conn, test_name, sql, iterations):
-    cur = conn.cursor(experimental_python_types=True)
+    cur = conn.cursor(experimental_python_types=args.exp)
 
     start = datetime.now()
     for i in range(iterations):
@@ -56,7 +56,7 @@ def run(conn, test_name, sql, iterations):
 
 
 def exec(conn, sql, i):
-    cur = conn.cursor(experimental_python_types=True)
+    cur = conn.cursor(experimental_python_types=args.exp)
     cur.execute(sql)
     rows = cur.fetchall()
 
@@ -104,7 +104,12 @@ with open('queries.txt') as f:
 parser = argparse.ArgumentParser()
 parser.add_argument('--server', action=argparse.BooleanOptionalAction)
 parser.add_argument('--mock', action=argparse.BooleanOptionalAction)
+parser.add_argument('--exp', action=argparse.BooleanOptionalAction)
+
 args = parser.parse_args()
+
+if args.exp:
+    print('experimental_python_types flag set')
 
 if args.server:
     PORT = 3001
